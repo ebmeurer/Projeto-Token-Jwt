@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using WebApplication1.Services;
+using WebApplication1.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApplication1.Extensions
 {
@@ -27,5 +29,14 @@ namespace WebApplication1.Extensions
 
             service.AddTransient<TokenService>();
         }
+
+        public static void ConnectDb(this IServiceCollection service, IConfiguration Configuration)
+        {
+            string stringDeConexao = Configuration.GetConnectionString("conexaoMySQL");
+
+            service.AddDbContext<DataContext>(opt => opt.UseMySql(stringDeConexao, ServerVersion.AutoDetect(stringDeConexao)));
+        }
     }
+
+
 }

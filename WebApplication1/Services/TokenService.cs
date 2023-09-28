@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WebApplication1.Entities;
+using WebApplication1.Data;
 
 namespace WebApplication1.Services
 {
@@ -46,6 +47,18 @@ namespace WebApplication1.Services
 
             return claims;
 
+        }
+
+        public bool ValidateLogin(User request, DataContext _dataContext) {
+            List<User> users = _dataContext.user.ToList();
+
+            foreach(User u in users){
+                if (u.Name == request.Name && u.Email == request.Email && u.Password == request.Password){
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

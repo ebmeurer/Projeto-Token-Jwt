@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Text.Json;
 using WebApplication1.Entities;
 using WebApplication1.Services;
+using WebApplication1.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApplication1.Controllers
 {
@@ -11,19 +15,36 @@ namespace WebApplication1.Controllers
     {
         private TokenService _TokenService;
 
-        public AuthController(TokenService TokenService)
+        private DataContext _dataContext;
+
+
+
+        public AuthController(TokenService TokenService, DataContext context)
         {
           _TokenService = TokenService;
+          this._dataContext = context;
         }
 
         [HttpPost]
 
-        public ActionResult<string> getToken(User request)
+        public ActionResult<string> getToken([FromBody] User request)
         {
 
-            var Token = _TokenService.GenerateToken(request);
+            if (_TokenService.ValidateLogin(request, _dataContext)){
+                var Token = _TokenService.GenerateToken(request);
 
-            return Ok(Token);
+                string json = JsonConvert.SerializeObject(new
+                {
+                    data = new JwtTokenReturn {Token = Token}
+                });
+
+                var jsonElement = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(json);
+
+                return Ok(jsonElement);   
+            } else {
+                return NotFound();
+            }
+
         }
 
         [HttpGet]
@@ -33,7 +54,5 @@ namespace WebApplication1.Controllers
         {
             return Ok("infos privadas");
         }
-
-
     }   
 }
